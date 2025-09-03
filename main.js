@@ -1,6 +1,3 @@
-let client;
-let channel;
-
 let localStream;
 let remoteStream;
 let peerConnection;
@@ -17,10 +14,6 @@ let init = async () => {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     document.getElementById('user-1').srcObject = localStream;
 
-    createOffer();
-}
-
-let createOffer = async () => {
     peerConnection = new RTCPeerConnection(servers);
 
     remoteStream = new MediaStream();
@@ -30,22 +23,38 @@ let createOffer = async () => {
         peerConnection.addTrack(track, localStream);
     });
 
-    peerConnection.ontrack = (event) => {
-        event.stream[0].getTracks().forEach((track) => {
-            remoteStream.addTrack();
-        })
-    }
-
-    peerConnection.onicecandidate = async (event) => {
+    peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            console.log('New ICE Candidate: ', event.candidate);
+            sendMessage({ type: 'candidate', candidate: event.candidate });
         }
-    }
+    };
+}
 
+let createOffer = async () => {
     let offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
 
-    console.log('Offer: ', offer);
+    sendMessage({ type: 'offer', offer });
+}
+
+let handleOffer = async (offer) => {
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    let answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    sendMessage({ type: 'answer', answer });
+}
+
+let handleAnswer = async (answer) => {
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+}
+
+let handleCandidate = async (candidate) => {
+    try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (error) {
+        console.error('Error adding received ICE candidate:', error);
+    }
 }
 
 init();
