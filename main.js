@@ -1,13 +1,5 @@
-import { appId } from "./consts";
-
-/////
-let APP_ID = appId;
-let token = null;
-let uid = String(Math.floor(Math.random() * 10000));
-
 let client;
 let channel;
-/////
 
 let localStream;
 let remoteStream;
@@ -22,15 +14,6 @@ const servers = {
 }
 
 let init = async () => {
-    /////
-    client = new AgoraRTM.RTM(APP_ID, uid);
-    await client.login({ token });
-    client.addEventListener("message", event => {
-  const { publisher, message } = event;
-  console.log("Message received from", publisher, ":", message);
-    });
-    /////
-
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     document.getElementById('user-1').srcObject = localStream;
 
@@ -61,10 +44,6 @@ let createOffer = async () => {
 
     let offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
-
-    //////
-    await client.publish("yourTopic", JSON.stringify({ type: "offer", sdp: offer }));
-    //////
 
     console.log('Offer: ', offer);
 }

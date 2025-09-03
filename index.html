@@ -13,6 +13,28 @@
         <video class="video-player" id="user-2" autoplay playsinline></video>
     </div>
 </body>
-<script src='agora-rtm-2.2.2.min.js'></script>
+<script>
+    let socket = new WebSocket('ws://localhost:3000');
+
+socket.onopen = () => {
+    console.log('Connected to signalling server');
+};
+
+socket.onmessage = (event) => {
+    let data = JSON.parse(event.data);
+
+    if (data.type === 'offer') {
+        handleOffer(data.offer);
+    } else if (data.type === 'answer') {
+        handleAnswer(data.answer);
+    } else if (data.type === 'candidate') {
+        handleCandidate(data.candidate);
+    }
+};
+
+function sendMessage(message) {
+    socket.send(JSON.stringify(message));
+}
+</script>
 <script src='main.js'></script>
 </html>
