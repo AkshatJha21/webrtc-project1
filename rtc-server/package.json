@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "rtc-server",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -11,9 +11,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "ws": "^8.18.3"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.10"
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10",
+    "socket.io": "^4.8.1"
   }
 }
