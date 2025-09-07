@@ -4,14 +4,19 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
 
 app.get("/", (req, res) => {
     res.send("WebRTC Signalling Server running");
 });
 
 io.on("connection", (socket) => {
-    res.send("New client connected:", socket.id);
+    console.log("New client connected:", socket.id);
 
     // Join a room:
     socket.on("join", (roomId) => {
@@ -21,27 +26,18 @@ io.on("connection", (socket) => {
     });
 
     // Send offer:
-    socket.on("offer", (payload) => {
-        io.to(payload.target).emit("offer", {
-            sdp: payload.sdp,
-            caller: payload.caller,
-        });
+    socket.on("offer", ({ roomId, offer }) => {
+        socket.to(roomId).emit("offer", { offer });
     });
 
     // Send answer:
-    socket.on("answer", (payload) => {
-        io.to(payload.target).emit("answer", {
-            sdp: payload.sdp,
-            answerer: payload.answerer,
-        });
+    socket.on("answer", ({ roomId, answer }) => {
+        socket.to(roomId).emit("answer", { answer });
     });
 
     // Share ICE candidates:
-    socket.on("ice-candidate", (payload) => {
-        io.to(payload.target).emit("ice-candidate", {
-            candidate: payload.candidate,
-            from: payload.from,
-        });
+    socket.on("ice-candidate", ({ roomId, candidate }) => {
+        socket.to(roomId).emit("ice-candidate", { candidate });
     });
 
     // End call:
